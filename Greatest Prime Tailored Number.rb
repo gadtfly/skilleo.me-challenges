@@ -1,9 +1,9 @@
 # Ruby 1.9.3 -> Ruby 2.0.0 polyfill/hack
 module Enumerable
-  def lazy_select(&block)
+  def lazy_select
     Enumerator.new do |y|
       each do |x|
-        y << x if block.call(x)
+        y << x if yield(x)
       end
     end
   end
@@ -11,27 +11,28 @@ module Enumerable
   def lazy_map(&block)
     Enumerator.new do |y|
       each do |x|
-        y << block.call(x)
+        y << yield(x)
       end
     end
   end
 
   def memoized
-    results = []
+    xs = []
 
     Enumerator.new do |y|
-      results.each do |x|
+      xs.each do |x|
         y << x
       end
 
       loop do
         x = self.next
-        results << x
+        xs << x
         y << x
       end
     end
   end
 end
+
 
 
 
@@ -47,24 +48,27 @@ class Array
 end
 
 
+
 class Integer
   INFINITY = Float::INFINITY
 
-  PRIMES = (2..INFINITY).lazy_map(&:to_i).lazy_select(&:prime?).memoized
+  PRIMES = Enumerator.new do |y|
+    e = (3..INFINITY).step(2).lazy_map(&:to_i).lazy_select(&:prime?)
+    y << 2
+    loop { y << e.next }
+  end.memoized
 
   def divisible?(n)
     modulo(n).zero?
   end
 
-  def prime_divisors
-    result = PRIMES.take_while{ |prime| prime <= self/2 }.select(&method(:divisible?))
-    result << self if result.to_a.empty?
-    result
+  def prime_factors
+    return [self] unless x = PRIMES.take_while{ |prime| prime <= Math.sqrt(self) }.find(&method(:divisible?))
+    (self/x).prime_factors << x
   end
 
   def prime?
-    return true if self == 2
-    prime_divisors.first == self
+    prime_factors == [self]
   end
 
   def digits
@@ -72,10 +76,9 @@ class Integer
   end
 
   def greatest_prime_tailored_number
-    (digits.monotonic? ? digits.product : self).prime_divisors.max
+    (digits.monotonic? ? digits.product : self).prime_factors.max
   end
 end
 
 
-# puts gets.to_i.greatest_prime_tailored_number
-puts 133258.greatest_prime_tailored_number
+puts gets.to_i.greatest_prime_tailored_number
