@@ -9,10 +9,10 @@ end
 
 module Enumerable
   def sequence
-    inject([[]]) do |m, m_p|
-      m.flat_map do |x|
-        m_p.flat_map do |xs|
-          [x+[xs]]
+    inject([[]]) do |yss, xs|
+      yss.flat_map do |ys|
+        xs.flat_map do |x|
+          [ys+[x]]
         end
       end
     end
@@ -22,6 +22,8 @@ module Enumerable
     replicate(n).sequence
   end
 
+  alias cartesian_product    sequence
+  alias cartesian_power      replicateM
   alias repeated_permutation replicateM
 end
 
