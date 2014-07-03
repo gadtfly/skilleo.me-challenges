@@ -80,5 +80,6 @@ class Integer
   end
 end
 
+# gets = '1332'
 
 puts gets.to_i.greatest_prime_tailored_number

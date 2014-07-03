@@ -14,4 +14,6 @@ class SoupLetter
   end
 end
 
+# gets = 'NO70JE3A4Z28X1GBQKFYLPDVWCSHUTM65R9I'
+
 puts WORD.chars.map(&SoupLetter.new(gets).method(:find)).join
